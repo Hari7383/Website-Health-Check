@@ -1,0 +1,531 @@
+<title>Positka Site Health Record</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@500;600;700&display=swap">
+<style>
+:root{
+  --ground:#f2f4f7; --surface:#ffffff; --surface-2:#f8fafc;
+  --ink:#161b26; --muted:#5a6474; --line:#dde2ea; --line-strong:#c6cedb;
+  --accent:#2a5d7c; --accent-soft:#e5eef4;
+  --pass:#0f7355; --pass-bg:#e3f2ec;
+  --warn:#9a6100; --warn-bg:#faefdc;
+  --fail:#b3232f; --fail-bg:#fbe6e7;
+  --utv:#5a6474; --utv-bg:#eaedf2;
+  --shadow:0 1px 2px rgba(22,27,38,.06),0 8px 24px -12px rgba(22,27,38,.18);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#0e1218; --surface:#161c25; --surface-2:#1b222c;
+    --ink:#e6eaf1; --muted:#9aa5b5; --line:#262e3a; --line-strong:#36404f;
+    --accent:#6ba8c9; --accent-soft:#1a2c38;
+    --pass:#46b892; --pass-bg:#122b24;
+    --warn:#d99a2b; --warn-bg:#2e2415;
+    --fail:#e8636f; --fail-bg:#331a1d;
+    --utv:#9aa5b5; --utv-bg:#212932;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#0e1218; --surface:#161c25; --surface-2:#1b222c;
+  --ink:#e6eaf1; --muted:#9aa5b5; --line:#262e3a; --line-strong:#36404f;
+  --accent:#6ba8c9; --accent-soft:#1a2c38;
+  --pass:#46b892; --pass-bg:#122b24;
+  --warn:#d99a2b; --warn-bg:#2e2415;
+  --fail:#e8636f; --fail-bg:#331a1d;
+  --utv:#9aa5b5; --utv-bg:#212932;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 24px 72px;display:flex;flex-direction:column;gap:26px}
+h1,h2,h3{font-family:"IBM Plex Serif",Georgia,serif;text-wrap:balance;margin:0;line-height:1.25}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+.record{background:var(--surface);border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow);overflow:hidden}
+.record-top{padding:26px 28px 22px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start;justify-content:space-between}
+.record-top h1{font-size:29px;font-weight:700;letter-spacing:-.01em}
+.record-top .sub{color:var(--muted);font-size:13.5px;margin-top:5px}
+.record-top a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+.record-top a:hover,.record-top a:focus-visible{border-bottom-color:var(--accent)}
+.verdict{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:190px}
+.verdict .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 14px;border-radius:3px;
+  background:var(--fail-bg);color:var(--fail);border:1px solid currentColor;font-weight:700;font-size:13px;
+  font-family:"IBM Plex Mono",monospace;letter-spacing:.04em}
+.verdict .badge::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:0;background:var(--line)}
+.meta div{background:var(--surface-2);padding:13px 18px}
+.meta dt{font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;margin:0 0 3px}
+.meta dd{margin:0;font-size:13.5px;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:4px;padding:15px 16px;
+  border-top:3px solid var(--line-strong)}
+.tile .n{font-size:31px;font-weight:600;font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;line-height:1}
+.tile .l{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;margin-top:7px}
+.tile.t-total{border-top-color:var(--accent)} .tile.t-total .n{color:var(--accent)}
+.tile.t-pass{border-top-color:var(--pass)}  .tile.t-pass .n{color:var(--pass)}
+.tile.t-fail{border-top-color:var(--fail)}  .tile.t-fail .n{color:var(--fail)}
+.tile.t-warn{border-top-color:var(--warn)}  .tile.t-warn .n{color:var(--warn)}
+.tile.t-utv{border-top-color:var(--utv)}    .tile.t-utv .n{color:var(--utv)}
+
+.now-head{display:flex;flex-wrap:wrap;gap:12px;align-items:baseline;justify-content:space-between}
+.now-head h2{font-size:20px;font-weight:600}
+.now-head p{margin:0;color:var(--muted);font-size:13px;max-width:60ch}
+.toolbar{display:flex;gap:8px}
+.toolbar button{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted);background:var(--surface);border:1px solid var(--line);
+  border-radius:3px;padding:6px 11px;cursor:pointer}
+.toolbar button:hover{color:var(--accent);border-color:var(--accent)}
+
+.findings{display:flex;flex-direction:column;gap:12px}
+.finding{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line-strong);
+  border-radius:4px;padding:18px 20px;box-shadow:var(--shadow)}
+.finding.sev-high{border-left-color:var(--fail)}
+.finding.sev-med{border-left-color:var(--warn)}
+.finding.sev-low{border-left-color:var(--accent)}
+.finding.sev-info{border-left-color:var(--line-strong)}
+.f-head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;margin-bottom:9px}
+.f-id{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em}
+.f-title{font-family:"IBM Plex Serif",Georgia,serif;font-size:16.5px;font-weight:600;flex:1 1 260px}
+.pill{display:inline-block;padding:2px 9px;border-radius:2px;font-size:10.5px;font-weight:600;
+  letter-spacing:.09em;text-transform:uppercase;font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+.p-fail{background:var(--fail-bg);color:var(--fail)}
+.p-warn{background:var(--warn-bg);color:var(--warn)}
+.p-pass{background:var(--pass-bg);color:var(--pass)}
+.p-utv{background:var(--utv-bg);color:var(--utv)}
+.p-info{background:var(--accent-soft);color:var(--accent)}
+.f-grid{display:grid;grid-template-columns:112px 1fr;gap:7px 16px;font-size:13.5px}
+.f-grid dt{font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;padding-top:3px}
+.f-grid dd{margin:0}
+.f-grid code,.note code,.readout code{font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:2px;padding:1px 5px;word-break:break-all}
+
+/* ---- disclosure ---- */
+details.panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;box-shadow:var(--shadow);overflow:hidden}
+details.panel > summary{
+  cursor:pointer;list-style:none;padding:15px 20px;display:flex;align-items:center;gap:13px;
+  background:var(--surface);user-select:none}
+details.panel > summary::-webkit-details-marker{display:none}
+details.panel > summary::after{
+  content:"";width:7px;height:7px;flex:none;margin-left:auto;
+  border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);
+  transform:rotate(45deg) translate(-2px,-2px);transition:transform .18s ease}
+details.panel[open] > summary::after{transform:rotate(-135deg) translate(-2px,-2px)}
+details.panel[open] > summary{border-bottom:1px solid var(--line)}
+details.panel > summary:hover{background:var(--surface-2)}
+.s-title{font-family:"IBM Plex Serif",Georgia,serif;font-size:16.5px;font-weight:600}
+.s-count{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted)}
+.panel-body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:12px}
+.panel-body > .findings{gap:12px}
+.panel-body .finding{box-shadow:none}
+
+.note{background:var(--surface-2);border:1px solid var(--line);border-left:4px solid var(--accent);
+  border-radius:4px;padding:16px 19px}
+.note h3{font-size:15px;margin-bottom:7px}
+.note p{margin:0 0 9px;font-size:13.5px;color:var(--muted)}
+.note p:last-child{margin-bottom:0}
+.note strong{color:var(--ink)}
+
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:4px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13.5px}
+th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font-size:10.5px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;background:var(--surface-2);position:sticky;top:0;border-bottom:1px solid var(--line-strong)}
+tbody tr:last-child td{border-bottom:none}
+.cat-row td{background:var(--surface-2);font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--accent);border-bottom:1px solid var(--line-strong)}
+td.id{font-family:"IBM Plex Mono",monospace;color:var(--muted);font-size:12px;white-space:nowrap}
+td.ev{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+ul.tight{margin:0;padding-left:19px;font-size:13.5px;display:flex;flex-direction:column;gap:6px;color:var(--muted)}
+ul.tight li::marker{color:var(--accent)}
+ul.tight strong{color:var(--ink)}
+footer{border-top:1px solid var(--line);padding-top:18px;color:var(--muted);font-size:12px;
+  font-family:"IBM Plex Mono",monospace;display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between}
+@media (max-width:640px){
+  .wrap{padding:26px 15px 52px}
+  .record-top h1{font-size:23px}
+  .verdict{align-items:flex-start}
+  .f-grid{grid-template-columns:1fr;gap:3px 0}
+  .f-grid dt{padding-top:8px}
+  details.panel > summary{padding:13px 15px;gap:9px}
+  .s-title{font-size:15px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+
+  <div class="record">
+    <div class="record-top">
+      <div>
+        <div class="eyebrow">Automated Health Check &middot; Cycle 001</div>
+        <h1>Positka Website Health Record</h1>
+        <div class="sub"><a href="https://www.positka.com/">https://www.positka.com/</a> &middot; Global cybersecurity &amp; IT services provider</div>
+      </div>
+      <div class="verdict">
+        <span class="badge">Action Required</span>
+        <span class="eyebrow">3 failed &middot; 13 warnings</span>
+      </div>
+    </div>
+    <dl class="meta">
+      <div><dt>Report date</dt><dd>2026-08-27</dd></div>
+      <div><dt>Check completed</dt><dd>05:21:19 UTC</dd></div>
+      <div><dt>Checked by</dt><dd>Health Check Agent</dd></div>
+      <div><dt>Next check</dt><dd>2026-08-28 05:21 UTC</dd></div>
+      <div><dt>Audit ref</dt><dd>PHC-20260827-001</dd></div>
+    </dl>
+  </div>
+
+  <div class="tiles">
+    <div class="tile t-total"><div class="n">51</div><div class="l">Items</div></div>
+    <div class="tile t-pass"><div class="n">31</div><div class="l">Passed</div></div>
+    <div class="tile t-fail"><div class="n">3</div><div class="l">Failed</div></div>
+    <div class="tile t-warn"><div class="n">13</div><div class="l">Warnings</div></div>
+    <div class="tile t-utv"><div class="n">4</div><div class="l">Unverified</div></div>
+  </div>
+
+  <div class="now-head">
+    <div>
+      <h2>Needs attention now</h2>
+      <p>The two findings a visitor encounters directly. Everything else is collapsed below.</p>
+    </div>
+    <div class="toolbar">
+      <button type="button" id="expandAll">Expand all</button>
+      <button type="button" id="collapseAll">Collapse all</button>
+    </div>
+  </div>
+
+  <div class="findings">
+
+    <article class="finding sev-high">
+      <div class="f-head"><span class="f-id">F-01</span>
+        <span class="f-title">Two main-navigation links return HTTP 404</span>
+        <span class="pill p-fail">Fail</span><span class="pill p-fail">High</span></div>
+      <dl class="f-grid">
+        <dt>Category</dt><dd>Navigation and Links</dd>
+        <dt>Observed</dt><dd><code>/services/mssp</code> &rarr; <strong>404</strong> (anchor text &ldquo;Managed Security Service&rdquo;)<br><code>/services/security-awareness-training-and-Phishing-stimulation</code> &rarr; <strong>404</strong> (anchor text &ldquo;Security Awareness Training &amp; Phishing Stimulation&rdquo;)</dd>
+        <dt>Notes</dt><dd>48 of 50 published internal page links returned 200; these two are the only failures. Both sit in the services dropdown, so the loss falls on a primary conversion path. The second URL appears to be a typo of the working page <code>/services/security-awareness-and-phishing-simulation</code> (&ldquo;stimulation&rdquo; &rarr; &ldquo;simulation&rdquo;, capital P). Neither broken URL appears in the sitemap, indicating the navigation markup is out of step with published routes.</dd>
+        <dt>Action</dt><dd>Repoint both anchors at live URLs, or restore the routes. Add 301s from the broken paths if they were ever indexed.</dd>
+        <dt>Owner</dt><dd>Web development team &middot; notification required</dd>
+      </dl>
+    </article>
+
+    <article class="finding sev-high">
+      <div class="f-head"><span class="f-id">F-02</span>
+        <span class="f-title">Eleven homepage images never load &mdash; no lazy-loading script present</span>
+        <span class="pill p-fail">Fail</span><span class="pill p-fail">High</span></div>
+      <dl class="f-grid">
+        <dt>Category</dt><dd>Images and Assets / Page Content</dd>
+        <dt>Observed</dt><dd>11 <code>&lt;img class="lazy"&gt;</code> elements carry a <code>data-src</code> but no <code>src</code>, and no script ever populates it. They reserve layout space (72&times;72 and 130&times;130) and render blank.</dd>
+        <dt>Notes</dt><dd>Confirmed viewport-independent: still unloaded at desktop and mobile widths, after scrolling each element into view and waiting. All 11 target files exist and decode correctly (11/11 verified), so the assets are fine &mdash; the loader is missing. No lazy-load library is referenced among the page's 25 scripts (<code>LazyLoad</code>, <code>lozad</code>, <code>jQuery.lazy</code> all undefined). Certification and trust-signal imagery is the visible casualty, including <code>iso-logo-new.webp</code> and <code>cyber-essentials.webp</code>.</dd>
+        <dt>Action</dt><dd>Restore the lazy-load library, or drop the pattern and set <code>src</code> directly with native <code>loading="lazy"</code>.</dd>
+        <dt>Owner</dt><dd>Web development team &middot; notification required</dd>
+      </dl>
+    </article>
+
+  </div>
+
+  <details class="panel">
+    <summary><span class="s-title">Medium-severity findings</span><span class="s-count">6 items &middot; F-03 to F-08</span></summary>
+    <div class="panel-body"><div class="findings">
+
+      <article class="finding sev-med">
+        <div class="f-head"><span class="f-id">F-03</span>
+          <span class="f-title">Six standard security response headers absent</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-warn">Medium</span></div>
+        <dl class="f-grid">
+          <dt>Category</dt><dd>Security and HTTPS</dd>
+          <dt>Observed</dt><dd>Absent: <code>Strict-Transport-Security</code>, <code>Content-Security-Policy</code>, <code>X-Content-Type-Options</code>, <code>X-Frame-Options</code>, <code>Referrer-Policy</code>, <code>Permissions-Policy</code>.</dd>
+          <dt>Notes</dt><dd>Without HSTS, the HTTP&rarr;HTTPS redirect &mdash; which does work correctly &mdash; remains interceptable on a visitor's first request. Worth weighting for a cybersecurity vendor whose own site acts as a credibility signal.</dd>
+          <dt>Action</dt><dd>Add headers at the Cloudflare edge or in Laravel middleware. Start with HSTS, <code>X-Content-Type-Options: nosniff</code> and <code>Referrer-Policy</code>; introduce CSP in report-only mode first.</dd>
+          <dt>Owner</dt><dd>Infrastructure / hosting team</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-med">
+        <div class="f-head"><span class="f-id">F-04</span>
+          <span class="f-title">Session cookies set without the Secure attribute</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-warn">Medium</span></div>
+        <dl class="f-grid">
+          <dt>Category</dt><dd>Security and HTTPS</dd>
+          <dt>Observed</dt><dd><code>XSRF-TOKEN</code> and <code>laravel_session</code> are issued with <code>path</code>, <code>Max-Age</code> and <code>SameSite=Lax</code>; <code>laravel_session</code> also carries <code>HttpOnly</code>. Neither carries <code>Secure</code>. Cookie values are redacted from this record.</dd>
+          <dt>Notes</dt><dd><code>SameSite=Lax</code> and <code>HttpOnly</code> are correctly applied, so this is a single gap rather than an absence of hygiene. <code>XSRF-TOKEN</code> being readable by JavaScript is expected Laravel behaviour and is not a finding.</dd>
+          <dt>Action</dt><dd>Set <code>SESSION_SECURE_COOKIE=true</code> in the Laravel environment configuration.</dd>
+          <dt>Owner</dt><dd>Web development team</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-med">
+        <div class="f-head"><span class="f-id">F-05</span>
+          <span class="f-title">robots.txt declares two wildcard groups; the /admin rule may be ignored</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-warn">Medium</span></div>
+        <dl class="f-grid">
+          <dt>Category</dt><dd>SEO and Search Visibility</dd>
+          <dt>Observed</dt><dd>The Cloudflare-managed block opens with <code>User-agent: *</code> / <code>Allow: /</code>. A second, separate <code>User-agent: *</code> group follows at the end of the file carrying <code>Disallow: /admin</code> and the <code>Sitemap:</code> line.</dd>
+          <dt>Notes</dt><dd>Under RFC 9309 a crawler selects the single most specific matching group, so the trailing <code>Disallow: /admin</code> may never be applied. The <code>Sitemap:</code> directive is group-independent and is unaffected. This is a crawl-directive defect, not an access control &mdash; robots.txt never protects an admin path in the first place.</dd>
+          <dt>Action</dt><dd>Merge into a single <code>User-agent: *</code> group so <code>Disallow: /admin</code> sits alongside <code>Allow: /</code>. Confirm <code>/admin</code> is protected by authentication independently.</dd>
+          <dt>Owner</dt><dd>Web development team</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-med">
+        <div class="f-head"><span class="f-id">F-06</span>
+          <span class="f-title">Every sitemap entry reports the same lastmod, one year stale</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-warn">Medium</span></div>
+        <dl class="f-grid">
+          <dt>Category</dt><dd>SEO and Search Visibility</dd>
+          <dt>Observed</dt><dd>All 379 URLs carry <code>lastmod</code> 2025-08-27 &mdash; a single frozen date, exactly one year before this check &mdash; while each declares <code>changefreq: daily</code>.</dd>
+          <dt>Notes</dt><dd>The sitemap is otherwise valid, well-formed and returns 200. A uniform year-old <code>lastmod</code> paired with a daily <code>changefreq</code> is self-contradictory and devalues the signal for crawlers.</dd>
+          <dt>Action</dt><dd>Regenerate the sitemap from real content timestamps and schedule regeneration on publish.</dd>
+          <dt>Owner</dt><dd>Web development team</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-med">
+        <div class="f-head"><span class="f-id">F-07</span>
+          <span class="f-title">Both www and apex serve HTTP 200 with no canonical redirect</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-warn">Medium</span></div>
+        <dl class="f-grid">
+          <dt>Category</dt><dd>SEO and Search Visibility</dd>
+          <dt>Observed</dt><dd><code>https://www.positka.com/</code> and <code>https://positka.com/</code> both return 200 with no redirect between them. The homepage canonical tag and all 379 sitemap URLs point at the apex.</dd>
+          <dt>Notes</dt><dd>The canonical tag and sitemap agree on apex, which mitigates the duplication, but identical content is served on two hosts. HTTP&rarr;HTTPS redirects are correct on both.</dd>
+          <dt>Action</dt><dd>Add a 301 from <code>www</code> to apex at the Cloudflare edge to match the declared canonical.</dd>
+          <dt>Owner</dt><dd>Infrastructure / hosting team</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-med">
+        <div class="f-head"><span class="f-id">F-08</span>
+          <span class="f-title">Mobile hero banner is heavier than the desktop one and its srcset width is wrong</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-warn">Medium</span></div>
+        <dl class="f-grid">
+          <dt>Category</dt><dd>Performance</dd>
+          <dt>Observed</dt><dd><code>home-banner-mob.webp</code> is declared <code>767w</code> but its true intrinsic width is <strong>1363px</strong> and it weighs <strong>97,032 bytes</strong>. The desktop candidate <code>home-banner.webp</code>, declared <code>1200w</code>, is also 1363px wide but only <strong>79,972 bytes</strong>.</dd>
+          <dt>Notes</dt><dd>Both files are valid WebP and serve correctly as <code>image/webp</code>. The two candidates are identical in pixel dimensions, so the srcset delivers no responsive benefit, and the incorrect <code>767w</code> descriptor causes mobile visitors to receive the larger of the two files.</dd>
+          <dt>Action</dt><dd>Re-export the mobile banner at true mobile dimensions and correct the width descriptors.</dd>
+          <dt>Owner</dt><dd>Web development team</dd>
+        </dl>
+      </article>
+
+    </div></div>
+  </details>
+
+  <details class="panel">
+    <summary><span class="s-title">Low-severity and informational</span><span class="s-count">4 items &middot; F-09 to F-12</span></summary>
+    <div class="panel-body"><div class="findings">
+
+      <article class="finding sev-low">
+        <div class="f-head"><span class="f-id">F-09</span>
+          <span class="f-title">Heading structure: two H1s, neither identifying the business</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-info">Low</span></div>
+        <dl class="f-grid">
+          <dt>Observed</dt><dd>Homepage H1s are &ldquo;Our Services&rdquo; and &ldquo;Our Locations&rdquo;, both carrying <code>class="s-h2"</code>. The contact page repeats the pattern (&ldquo;Contact us&rdquo;, &ldquo;Our Locations&rdquo;). 13 H2s follow on the homepage.</dd>
+          <dt>Notes</dt><dd>H1 is being used for section headers while styled as H2, so no single heading states what the company does. The title and meta description are both correct and descriptive, which limits the impact.</dd>
+          <dt>Action</dt><dd>Use one H1 per page describing that page's subject; demote section headers to H2.</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-low">
+        <div class="f-head"><span class="f-id">F-10</span>
+          <span class="f-title">Sixteen image tags without an alt attribute</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-info">Low</span></div>
+        <dl class="f-grid">
+          <dt>Observed</dt><dd>16 of 66 <code>&lt;img&gt;</code> tags in the homepage source carry no <code>alt</code>; 4 remain missing in the rendered DOM, all <code>phone-location.webp</code>. No image uses an empty <code>alt=""</code>.</dd>
+          <dt>Notes</dt><dd>Separately, <code>og:image:alt</code> is populated with an image URL rather than descriptive text, leaving social previews without useful alternative text.</dd>
+          <dt>Action</dt><dd>Add descriptive alt text, or an explicit <code>alt=""</code> for decorative images; replace the <code>og:image:alt</code> URL with a description.</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-low">
+        <div class="f-head"><span class="f-id">F-11</span>
+          <span class="f-title">Minor content and markup defects</span>
+          <span class="pill p-warn">Warning</span><span class="pill p-info">Low</span></div>
+        <dl class="f-grid">
+          <dt>Observed</dt><dd><strong>a.</strong> The homepage links <code>/platforms/netskope-security-cloudy</code>, which 301-redirects to the correct <code>/platforms/netskope-security-cloud</code> &mdash; an avoidable hop caused by a misspelled href.<br>
+            <strong>b.</strong> The homepage declares two <code>&lt;meta name="viewport"&gt;</code> tags with differing values.<br>
+            <strong>c.</strong> The contact form has neither an <code>action</code> nor a <code>method</code> attribute, so it resolves to <code>GET</code> on the current URL and depends entirely on JavaScript. Were that to fail, a native submit would place entered details in the query string.</dd>
+          <dt>Action</dt><dd>Point the href at the final URL; remove the duplicate viewport tag; set an explicit <code>method="POST"</code> and <code>action</code> on the form.</dd>
+        </dl>
+      </article>
+
+      <article class="finding sev-info">
+        <div class="f-head"><span class="f-id">F-12</span>
+          <span class="f-title">Observations for confirmation &mdash; no action assumed</span>
+          <span class="pill p-info">Informational</span></div>
+        <dl class="f-grid">
+          <dt>Observed</dt><dd><strong>a.</strong> The footer LinkedIn link is <code>in.linkedin.com/company/postika</code> &mdash; the slug reads &ldquo;postika&rdquo;, not &ldquo;positka&rdquo;. It returned 200 after one redirect, so it does resolve; flagged only to confirm the slug is intentional.<br>
+            <strong>b.</strong> One of five homepage samples showed a 2.68s time-to-first-byte against a 0.63&ndash;1.11s baseline. Within threshold, recorded for trend.</dd>
+          <dt>Action</dt><dd>Confirm the LinkedIn slug. No change required for the timing unless it recurs across cycles.</dd>
+        </dl>
+      </article>
+
+    </div></div>
+  </details>
+
+  <details class="panel">
+    <summary><span class="s-title">Full checklist</span><span class="s-count">51 items &middot; 9 categories</span></summary>
+    <div class="panel-body">
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>ID</th><th>Checklist item</th><th>Status</th><th>Evidence</th></tr></thead>
+          <tbody>
+            <tr class="cat-row"><td colspan="4">Website Availability</td></tr>
+            <tr><td class="id">A1</td><td>Homepage returns a successful HTTP response</td><td><span class="pill p-pass">Pass</span></td><td class="ev">200 &middot; 1.281s &middot; 145,418 B</td></tr>
+            <tr><td class="id">A2</td><td>Apex host reachable over HTTPS</td><td><span class="pill p-pass">Pass</span></td><td class="ev">200</td></tr>
+            <tr><td class="id">A3</td><td>No unexpected server errors across sampled pages</td><td><span class="pill p-pass">Pass</span></td><td class="ev">0 &times; 5xx / 50 URLs</td></tr>
+            <tr><td class="id">A4</td><td>Response time within 3.0s threshold</td><td><span class="pill p-pass">Pass</span></td><td class="ev">max 2.779s</td></tr>
+            <tr><td class="id">A5</td><td>Unknown paths return a true 404, not a soft 404</td><td><span class="pill p-pass">Pass</span></td><td class="ev">probe &rarr; 404</td></tr>
+            <tr><td class="id">A6</td><td>Major pages do not redirect to invalid destinations</td><td><span class="pill p-pass">Pass</span></td><td class="ev">all resolve 200</td></tr>
+            <tr><td class="id">A7</td><td>Domain not intermittently unavailable</td><td><span class="pill p-utv">Unable to Verify</span></td><td class="ev">no history; cycle 1</td></tr>
+
+            <tr class="cat-row"><td colspan="4">Navigation and Links</td></tr>
+            <tr><td class="id">N1</td><td>Published internal links resolve correctly</td><td><span class="pill p-fail">Fail</span></td><td class="ev">48/50 &middot; F-01</td></tr>
+            <tr><td class="id">N2</td><td>No redirect loops</td><td><span class="pill p-pass">Pass</span></td><td class="ev">none detected</td></tr>
+            <tr><td class="id">N3</td><td>Links point at final URLs, not redirects</td><td><span class="pill p-warn">Warning</span></td><td class="ev">1 &times; 301 &middot; F-11a</td></tr>
+            <tr><td class="id">N4</td><td>Menus, footer links and CTAs render and resolve</td><td><span class="pill p-pass">Pass</span></td><td class="ev">194 hrefs parsed</td></tr>
+            <tr><td class="id">N5</td><td>External links reach expected destinations</td><td><span class="pill p-utv">Unable to Verify</span></td><td class="ev">2 blocked by test network</td></tr>
+
+            <tr class="cat-row"><td colspan="4">Page Content</td></tr>
+            <tr><td class="id">C1</td><td>Pages carry the expected title</td><td><span class="pill p-pass">Pass</span></td><td class="ev">all sampled pages titled</td></tr>
+            <tr><td class="id">C2</td><td>Contact and business details displayed</td><td><span class="pill p-pass">Pass</span></td><td class="ev">5 tel, mailto, 4 offices</td></tr>
+            <tr><td class="id">C3</td><td>No placeholder or lorem text present</td><td><span class="pill p-pass">Pass</span></td><td class="ev">none observed</td></tr>
+            <tr><td class="id">C4</td><td>No unexpected blank sections</td><td><span class="pill p-fail">Fail</span></td><td class="ev">11 empty slots &middot; F-02</td></tr>
+            <tr><td class="id">C5</td><td>Heading structure reasonably configured</td><td><span class="pill p-warn">Warning</span></td><td class="ev">2 &times; H1 &middot; F-09</td></tr>
+
+            <tr class="cat-row"><td colspan="4">Images and Assets</td></tr>
+            <tr><td class="id">I1</td><td>CSS, JS and font assets load successfully</td><td><span class="pill p-pass">Pass</span></td><td class="ev">63/63 &rarr; 200</td></tr>
+            <tr><td class="id">I2</td><td>Images load successfully in the rendered page</td><td><span class="pill p-fail">Fail</span></td><td class="ev">11 unloaded &middot; F-02</td></tr>
+            <tr><td class="id">I3</td><td>Images include alternative text</td><td><span class="pill p-warn">Warning</span></td><td class="ev">16/66 no alt &middot; F-10</td></tr>
+            <tr><td class="id">I4</td><td>No console errors blocking content</td><td><span class="pill p-pass">Pass</span></td><td class="ev">0 errors</td></tr>
+            <tr><td class="id">I5</td><td>Images not excessively large for their role</td><td><span class="pill p-warn">Warning</span></td><td class="ev">mobile &gt; desktop &middot; F-08</td></tr>
+
+            <tr class="cat-row"><td colspan="4">Forms and User Interactions</td></tr>
+            <tr><td class="id">R1</td><td>Contact form visible and rendered</td><td><span class="pill p-pass">Pass</span></td><td class="ev">#contactpage visible</td></tr>
+            <tr><td class="id">R2</td><td>Required-field validation behaves as expected</td><td><span class="pill p-pass">Pass</span></td><td class="ev">empty form rejected</td></tr>
+            <tr><td class="id">R3</td><td>Bot protection present</td><td><span class="pill p-pass">Pass</span></td><td class="ev">reCAPTCHA present</td></tr>
+            <tr><td class="id">R4</td><td>CSRF protection present</td><td><span class="pill p-pass">Pass</span></td><td class="ev">_token field</td></tr>
+            <tr><td class="id">R5</td><td>Form declares an explicit action and method</td><td><span class="pill p-warn">Warning</span></td><td class="ev">neither set &middot; F-11c</td></tr>
+            <tr><td class="id">R6</td><td>End-to-end submission and success message</td><td><span class="pill p-utv">Unable to Verify</span></td><td class="ev">not authorised; not attempted</td></tr>
+
+            <tr class="cat-row"><td colspan="4">Security and HTTPS</td></tr>
+            <tr><td class="id">S1</td><td>Site served over HTTPS</td><td><span class="pill p-pass">Pass</span></td><td class="ev">TLS verify = 0</td></tr>
+            <tr><td class="id">S2</td><td>HTTP redirects safely to HTTPS</td><td><span class="pill p-pass">Pass</span></td><td class="ev">301, both hosts</td></tr>
+            <tr><td class="id">S3</td><td>Certificate valid and matches the domain</td><td><span class="pill p-pass">Pass</span></td><td class="ev">CN=positka.com, *.positka.com</td></tr>
+            <tr><td class="id">S4</td><td>Certificate not near expiry</td><td><span class="pill p-pass">Pass</span></td><td class="ev">54 days &middot; to 2026-10-21</td></tr>
+            <tr><td class="id">S5</td><td>No mixed content on HTTPS pages</td><td><span class="pill p-pass">Pass</span></td><td class="ev">0 http:// refs</td></tr>
+            <tr><td class="id">S6</td><td>Security response headers present</td><td><span class="pill p-warn">Warning</span></td><td class="ev">6 absent &middot; F-03</td></tr>
+            <tr><td class="id">S7</td><td>Cookies carry the Secure attribute</td><td><span class="pill p-warn">Warning</span></td><td class="ev">2 without &middot; F-04</td></tr>
+
+            <tr class="cat-row"><td colspan="4">SEO and Search Visibility</td></tr>
+            <tr><td class="id">E1</td><td>robots.txt accessible and parseable</td><td><span class="pill p-pass">Pass</span></td><td class="ev">200 &middot; 1,911 B</td></tr>
+            <tr><td class="id">E2</td><td>robots.txt group structure valid</td><td><span class="pill p-warn">Warning</span></td><td class="ev">duplicate wildcard &middot; F-05</td></tr>
+            <tr><td class="id">E3</td><td>XML sitemap accessible and valid</td><td><span class="pill p-pass">Pass</span></td><td class="ev">200 &middot; 379 URLs</td></tr>
+            <tr><td class="id">E4</td><td>Sitemap lastmod values meaningful</td><td><span class="pill p-warn">Warning</span></td><td class="ev">379/379 stale &middot; F-06</td></tr>
+            <tr><td class="id">E5</td><td>Canonical tag present and well-formed</td><td><span class="pill p-pass">Pass</span></td><td class="ev">https://positka.com/</td></tr>
+            <tr><td class="id">E6</td><td>Single canonical host enforced</td><td><span class="pill p-warn">Warning</span></td><td class="ev">www + apex 200 &middot; F-07</td></tr>
+            <tr><td class="id">E7</td><td>Meta description and structured data present</td><td><span class="pill p-pass">Pass</span></td><td class="ev">Organization, WebSite, SearchAction</td></tr>
+
+            <tr class="cat-row"><td colspan="4">Mobile and Browser Compatibility</td></tr>
+            <tr><td class="id">M1</td><td>Viewport meta tag present</td><td><span class="pill p-pass">Pass</span></td><td class="ev">width=device-width</td></tr>
+            <tr><td class="id">M2</td><td>Exactly one viewport declaration</td><td><span class="pill p-warn">Warning</span></td><td class="ev">2 tags &middot; F-11b</td></tr>
+            <tr><td class="id">M3</td><td>No abnormal horizontal scrolling</td><td><span class="pill p-pass">Pass</span></td><td class="ev">overflow &minus;15px</td></tr>
+            <tr><td class="id">M4</td><td>Mobile navigation opens and is usable</td><td><span class="pill p-pass">Pass</span></td><td class="ev">toggle &rarr; 55 links</td></tr>
+            <tr><td class="id">M5</td><td>Consistent across multiple browser engines</td><td><span class="pill p-utv">Unable to Verify</span></td><td class="ev">one engine available</td></tr>
+
+            <tr class="cat-row"><td colspan="4">Performance</td></tr>
+            <tr><td class="id">P1</td><td>Pages load within the configured threshold</td><td><span class="pill p-pass">Pass</span></td><td class="ev">0.73&ndash;2.78s</td></tr>
+            <tr><td class="id">P2</td><td>No excessive redirect chains</td><td><span class="pill p-pass">Pass</span></td><td class="ev">max 1 hop</td></tr>
+            <tr><td class="id">P3</td><td>Large or slow resources identified</td><td><span class="pill p-warn">Warning</span></td><td class="ev">banner 97 KB &middot; F-08</td></tr>
+            <tr><td class="id">P4</td><td>Response time consistent across samples</td><td><span class="pill p-warn">Warning</span></td><td class="ev">2.68s outlier &middot; F-12b</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <details class="panel">
+    <summary><span class="s-title">Scope and limitations</span><span class="s-count">4 unverified &middot; method notes</span></summary>
+    <div class="panel-body">
+      <div class="note">
+        <p><strong>Not verified, and why.</strong> Four items could not be completed and are recorded as unverified rather than passing:</p>
+        <ul class="tight">
+          <li><strong>External social links</strong> &mdash; <code>twitter.com/positka</code> failed TLS handshake and the YouTube channel timed out <em>from this test network</em>. That reflects the test environment, not a confirmed site fault; both need re-checking from an unrestricted network before any conclusion is drawn. The LinkedIn link resolved normally.</li>
+          <li><strong>Form submission end-to-end</strong> &mdash; deliberately not attempted, as there is no authorisation to send a real enquiry.</li>
+          <li><strong>Cross-browser rendering</strong> &mdash; only one rendering engine was available this cycle.</li>
+          <li><strong>Availability history</strong> &mdash; this is the first cycle, so no trend, recurrence or recovery comparison exists yet.</li>
+        </ul>
+      </div>
+      <div class="note">
+        <p><strong>Two qualifiers on method.</strong> Mobile layout was measured at a 285px CSS viewport rather than a true 375px. That is a stricter test and the page held, but a 375px pass is not formally evidenced. Screenshot capture was unavailable because the browser pane was not displayed, so visual evidence here is DOM measurement rather than imagery. Content review covered the homepage and contact page, not all 379 sitemap URLs.</p>
+        <p><strong>Corrected during the cycle.</strong> Three apparent faults were investigated and cleared rather than reported: two image URLs containing unencoded spaces returned 200 once properly encoded; both hero banner files decode correctly; and an initial reading suggesting a broken mobile menu was disproved, as a dedicated <code>.mobile-menu</code> element opens correctly on click.</p>
+      </div>
+      <div class="note">
+        <p><strong>Crawl authorisation.</strong> The site's own <code>robots.txt</code> contains <code>User-agent: ClaudeBot</code> &rarr; <code>Disallow: /</code>, part of a Cloudflare-managed AI-crawler block alongside GPTBot, CCBot and Google-Extended. This cycle was run at the owner's direction against their own property, using a health-check user agent at low request volume &mdash; not as ClaudeBot. It should be a conscious decision before this runs on a schedule.</p>
+          <p>No forms were submitted, no records created, and no content, DNS or configuration was modified. Form validation was exercised with <code>checkValidity()</code>, which validates locally and sends nothing.</p>
+      </div>
+    </div>
+  </details>
+
+  <details class="panel">
+    <summary><span class="s-title">Recommended next steps</span><span class="s-count">by owner</span></summary>
+    <div class="panel-body">
+      <div class="note">
+        <ul class="tight">
+          <li><strong>Web development team, this week:</strong> fix the two 404 navigation links (F-01) and restore image loading on the homepage (F-02). These are the only two findings visitors encounter directly.</li>
+          <li><strong>Infrastructure / hosting, this sprint:</strong> add security response headers (F-03) and a www&rarr;apex 301 (F-07).</li>
+          <li><strong>Web development team, this sprint:</strong> set the Secure cookie flag (F-04), merge the robots.txt groups (F-05), regenerate sitemap timestamps (F-06) and correct the banner srcset (F-08).</li>
+          <li><strong>Content / marketing, backlog:</strong> heading structure (F-09), alt text (F-10), minor markup defects (F-11), and confirm the LinkedIn slug (F-12a).</li>
+          <li><strong>Configuration still needed:</strong> report recipients, escalation owners and the reminder interval are not set, so no notification was dispatched this cycle. Vendor routing could not be determined, as no vendor details are on file.</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  <footer>
+    <span>Audit ref PHC-20260827-001 &middot; 51 items &middot; 31 pass / 3 fail / 13 warning / 4 unverified</span>
+    <span>Checked by Website Health Check Orchestrator AI Agent</span>
+  </footer>
+
+</div>
+
+<script>
+(function(){
+  var panels = document.querySelectorAll("details.panel");
+  var expand = document.getElementById("expandAll");
+  var collapse = document.getElementById("collapseAll");
+  function setAll(open){
+    for(var i=0;i<panels.length;i++){ panels[i].open = open; }
+  }
+  if(expand) expand.addEventListener("click", function(){ setAll(true); });
+  if(collapse) collapse.addEventListener("click", function(){ setAll(false); });
+
+  // Open the panel containing a finding when linked to by hash, e.g. #F-05
+  function revealFromHash(){
+    var h = (location.hash || "").replace("#","");
+    if(!h) return;
+    var ids = document.querySelectorAll(".f-id");
+    for(var i=0;i<ids.length;i++){
+      if(ids[i].textContent.trim() === h){
+        var d = ids[i].closest("details.panel");
+        if(d){ d.open = true; }
+        ids[i].closest(".finding").scrollIntoView({block:"center"});
+        return;
+      }
+    }
+  }
+  window.addEventListener("hashchange", revealFromHash);
+  revealFromHash();
+})();
+</script>

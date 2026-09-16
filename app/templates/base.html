@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Website Hygiene Check{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+
+{% if session.get('username') %}
+<div class="topbar">
+  <span class="brand">{{ site }} &middot; Website Hygiene Check</span>
+  <span class="who">
+    {% if require_login %}
+      Signed in as <strong>{{ session['display_name'] }}</strong>
+      <form method="post" action="{{ url_for('logout') }}" style="margin:0">
+        <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+        <button type="submit" class="ghost">Sign out</button>
+      </form>
+    {% else %}
+      Checked by <strong>{{ session['display_name'] }}</strong>
+    {% endif %}
+  </span>
+</div>
+{% endif %}
+
+<div class="wrap {% block wrapclass %}{% endblock %}">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+  {% block content %}{% endblock %}
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

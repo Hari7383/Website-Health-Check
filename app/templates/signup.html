@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Create account &middot; Website Hygiene Check{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="eyebrow">{{ site }}</div>
+  <h2>Create your account</h2>
+  <p class="sub">Your display name is written into the <strong>Checked By</strong> column
+     for every row you save, so use the name that should appear in the sheet.</p>
+
+  <form method="post" autocomplete="off">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autofocus
+             autocapitalize="none" spellcheck="false" value="{{ form.username }}"
+             pattern="[A-Za-z0-9._-]{3,32}"
+             title="3 to 32 characters: letters, numbers, dots, hyphens, underscores">
+      <p class="hint">3&ndash;32 characters. Letters, numbers, dots, hyphens and underscores.</p>
+    </div>
+
+    <div class="field">
+      <label for="display_name">Display name</label>
+      <input type="text" id="display_name" name="display_name" required maxlength="60"
+             value="{{ form.display_name }}" placeholder="e.g. Floris">
+      <p class="hint">Goes in the Checked By column.</p>
+    </div>
+
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required minlength="{{ min_length }}">
+      <p class="hint">At least {{ min_length }} characters.</p>
+    </div>
+
+    <div class="field">
+      <label for="confirm">Confirm password</label>
+      <input type="password" id="confirm" name="confirm" required minlength="{{ min_length }}">
+      <p class="hint" id="match" aria-live="polite"></p>
+    </div>
+
+    <button type="submit" class="big" style="width:100%">Create account and sign in</button>
+  </form>
+
+  <p class="alt">Already have an account? <a href="{{ url_for('login') }}">Sign in</a></p>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  var pw = document.getElementById('password');
+  var cf = document.getElementById('confirm');
+  var msg = document.getElementById('match');
+  function check(){
+    if (!cf.value) { msg.textContent = ''; cf.setCustomValidity(''); return; }
+    if (pw.value === cf.value) {
+      msg.textContent = 'Passwords match.';
+      msg.style.color = 'var(--pass)';
+      cf.setCustomValidity('');
+    } else {
+      msg.textContent = 'Passwords do not match yet.';
+      msg.style.color = 'var(--fail)';
+      cf.setCustomValidity('Passwords do not match.');
+    }
+  }
+  pw.addEventListener('input', check);
+  cf.addEventListener('input', check);
+})();
+</script>
+{% endblock %}

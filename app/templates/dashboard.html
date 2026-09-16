@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Dashboard &middot; Website Hygiene Check{% endblock %}
+
+{% block content %}
+
+<div>
+  <div class="eyebrow">{{ today.strftime('%A, %d %B %Y') }}</div>
+  <h1 style="font-size:26px">Run today's hygiene check</h1>
+</div>
+
+{% if error %}
+  <div class="flash error">{{ error }}</div>
+{% endif %}
+
+{% if already_run %}
+  <div class="flash ok">
+    A run for {{ today }} is already recorded in this workbook. Running again will
+    overwrite that column.
+  </div>
+{% endif %}
+
+<div class="card">
+  <h2>What will be checked</h2>
+  <p class="sub">{{ checklist|length }} items against <a href="{{ base_url }}">{{ base_url }}</a>.
+     Every check is read-only &mdash; no form is submitted, no booking made, no mail sent.</p>
+
+  <div class="stats" style="margin-bottom:18px">
+    <div class="stat s-accent"><div class="n">{{ checklist|length }}</div><div class="l">Items</div></div>
+    <div class="stat s-pass"><div class="n">{{ checklist|selectattr('mode','equalto','auto')|list|length }}</div><div class="l">Automated</div></div>
+    <div class="stat s-wait"><div class="n">{{ checklist|selectattr('mode','equalto','manual')|list|length }}</div><div class="l">Needs you</div></div>
+  </div>
+
+  <ul class="plain">
+    {% for c in checklist %}
+      <li>
+        <strong style="color:var(--ink)">{{ c.item.strip() }}</strong>
+        {% if c.mode == 'manual' %}
+          <span class="pill p-wait" style="margin-left:6px">Manual</span>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% if not require_login %}
+<div class="card">
+  <h2>Checked by</h2>
+  <p class="sub">This name is written into the <strong>Checked By</strong> column for every
+     row you save. It is remembered until you change it.</p>
+  <form method="post" action="{{ url_for('whoami') }}" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="field" style="flex:1 1 260px;margin-bottom:0">
+      <label for="display_name">Your name (optional — leave blank to use "{{ default_checked_by }}")</label>
+      <input type="text" id="display_name" name="display_name" maxlength="60"
+             value="{{ display_name }}" placeholder="e.g. Floris">
+    </div>
+    <button type="submit" class="ghost">Update name</button>
+  </form>
+</div>
+{% endif %}
+
+<div class="card">
+  <h2>Workbook</h2>
+  <p class="sub">Results are written into a new dated column. A timestamped backup is
+     taken before every save.</p>
+
+  {% if info %}
+  <dl class="meta" style="margin-bottom:18px">
+    <div><dt>Sheet</dt><dd>{{ info.sheet }}</dd></div>
+    <div><dt>Checklist items</dt><dd>{{ info.items }}</dd></div>
+    <div><dt>Runs recorded</dt><dd>{{ info.completed_runs }}</dd></div>
+    <div><dt>Last completed</dt><dd>{{ info.last_completed or '—' }}</dd></div>
+  </dl>
+  {% endif %}
+
+  <div class="field" style="margin-bottom:0">
+    <label>Workbook path (fixed)</label>
+    <input type="text" value="{{ workbook_path }}" readonly spellcheck="false"
+           style="color:var(--muted)">
+  </div>
+  <p class="sub" style="margin-top:10px">This path is fixed in the app's configuration.
+     There is no upload &mdash; replace the file at this exact path and name on disk,
+     then reload this page.</p>
+
+  {% if info %}
+  <div style="margin-top:16px;padding-top:15px;border-top:1px solid var(--line)">
+    <a href="{{ url_for('download_workbook') }}" class="btn">Download Excel sheet</a>
+    <span style="margin-left:10px;color:var(--muted);font-size:13px">
+      Current workbook with every run recorded so far
+    </span>
+  </div>
+  {% endif %}
+</div>
+
+<form method="post" action="{{ url_for('run') }}">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+  <div class="sticky-actions">
+    <button type="submit" class="big" {% if error %}disabled{% endif %}>Run health check</button>
+    <span class="spacer">
+      Results will be saved as <strong>{{ display_name }}</strong> &middot; takes 1&ndash;3 minutes
+    </span>
+  </div>
+</form>
+
+{% endblock %}

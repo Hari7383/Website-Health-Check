@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Running &middot; Website Hygiene Check{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="eyebrow">In progress</div>
+  <h2>Checking the site</h2>
+  <p class="sub">Each item is loaded in a real browser, so this takes a minute or two.
+     Leave this tab open.</p>
+
+  <div class="bar" style="margin-bottom:12px"><span id="fill"></span></div>
+  <div class="mono" style="font-size:12px;color:var(--muted)">
+    <span id="count">0</span> of {{ total }} &middot; <span id="current">starting…</span>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+(function(){
+  var jobId = {{ job_id|tojson }};
+  var total = {{ total }};
+  var fill = document.getElementById('fill');
+  var count = document.getElementById('count');
+  var current = document.getElementById('current');
+  var misses = 0;
+
+  function poll(){
+    fetch('/run/' + jobId + '/status', {credentials:'same-origin'})
+      .then(function(r){ if(!r.ok) throw new Error('status ' + r.status); return r.json(); })
+      .then(function(d){
+        misses = 0;
+        count.textContent = d.done;
+        fill.style.width = Math.round((d.done / total) * 100) + '%';
+        current.textContent = d.current || (d.state === 'finished' ? 'done' : 'working…');
+        if (d.state === 'finished') {
+          window.location.href = '/review/' + jobId;
+          return;
+        }
+        if (d.state === 'failed') {
+          current.textContent = d.error || 'the check process stopped unexpectedly';
+          current.style.color = 'var(--fail)';
+          return;
+        }
+        setTimeout(poll, 1200);
+      })
+      .catch(function(){
+        misses++;
+        current.textContent = 'lost contact with the server (retry ' + misses + ')';
+        if (misses < 10) setTimeout(poll, 3000);
+      });
+  }
+  poll();
+})();
+</script>
+{% endblock %}

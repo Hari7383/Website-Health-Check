@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Saved · Website Hygiene Check{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="eyebrow">{{ today.strftime('%d %B %Y') }}</div>
+  <h2>Workbook updated</h2>
+  <p class="sub">{{ saved_count }} checklist row{{ '' if saved_count == 1 else 's' }} written into the
+     <strong>{{ today }}</strong> column of the workbook at <code>{{ workbook_path }}</code>.
+     A timestamped backup of the previous version was saved alongside it first.</p>
+
+  <dl class="meta" style="margin-bottom:18px">
+    <div><dt>Result file</dt><dd>{{ outcome.result_download_name }}</dd></div>
+    <div><dt>Column</dt><dd>{{ outcome.column_letter }} {% if outcome.created_block %}(new — inserted for today){% endif %}</dd></div>
+    <div><dt>Rows written</dt><dd>{{ outcome.rows_written }}</dd></div>
+    {% if outcome.backup %}<div><dt>Backup</dt><dd>{{ outcome.backup }}</dd></div>{% endif %}
+  </dl>
+
+  {% if skipped %}
+    <div class="flash error" style="margin-bottom:16px">
+      These rows were not finalized because no Pass or Fail was selected:
+      <ul class="plain" style="margin-top:7px">
+        {% for s in skipped %}<li>{{ s }}</li>{% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <a href="{{ result_download_url }}" class="btn">Download result XLSX</a>
+    <a href="{{ url_for('dashboard') }}" class="btn ghost">Back to dashboard</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+Website Hygiene Check - install and run
+=======================================
+
+WHAT THIS IS
+  Runs the 14-item Website Hygiene Checklist against positka.com, fills in
+  Pass/Fail and notes automatically, and writes the results into the Excel
+  checklist under your name. You review every row before anything is saved.
+
+
+BEFORE YOU START
+  Put a copy of the Excel checklist (Website Hygiene Checklist 2026 v1.0.xlsx)
+  in your Downloads, Desktop, or Documents folder, or in this folder. The tool
+  finds it automatically.
+
+
+STEP 1 - OPEN POWERSHELL IN THIS FOLDER
+  Hold Shift, right-click this folder, choose "Open PowerShell window here".
+
+
+STEP 2 - INSTALL EVERYTHING (once, 5-10 minutes)
+
+    powershell -ExecutionPolicy Bypass -File .\bootstrap.ps1
+
+  This installs Python if you do not have it, then the dependencies and the
+  browser the checks run in. It is safe to run again if it stops partway.
+
+  If that script will not run, do it manually instead:
+
+    python -m venv .venv
+    .\.venv\Scripts\python.exe -m pip install -r requirements.txt
+    .\.venv\Scripts\python.exe -m playwright install chromium
+
+
+STEP 3 - START THE TOOL (every time)
+
+    powershell -ExecutionPolicy Bypass -File .\run.ps1
+
+  Or manually:
+
+    .\.venv\Scripts\python.exe manage.py runserver
+
+  Then open http://127.0.0.1:5000 in your browser.
+  Keep the PowerShell window open. Closing it stops the tool.
+
+
+STEP 4 - RUN A CHECK
+  1. Put your name in the "Checked by" box. It goes into the Checked By
+     column of the sheet.
+  2. Check the workbook path is right, then click "Run health check".
+  3. Wait about three minutes.
+  4. Review each row. Failures show in red with the evidence behind them.
+     Change anything you disagree with - your name is on it.
+  5. Review every row and set Pass or Fail where the agent cannot safely decide.
+  6. Click "Save to workbook". The original upload is left untouched and a new result XLSX is created.
+  7. Download the new result XLSX. It contains the checklist item, timing fields, status, evidence and URL(s).
+
+  One row, Spelling/Grammar, is always left for you to decide. There is no
+  reliable automated test for it.
+
+
+IF PYTHON IS NOT FOUND
+  Windows ships a fake python.exe that shows "Python was not found; run
+  without arguments to install from the Microsoft Store". Either install
+  Python from https://www.python.org/downloads/ (tick "Add python.exe to
+  PATH" on the first screen), or turn the alias off under
+  Settings > Apps > Advanced app settings > App execution aliases.
+
+
+NOTES
+  The tool only reads the website. It never submits a form, books an
+  appointment, sends email, or changes anything on the site.
+
+  Your saved results go into YOUR copy of the Excel file. If several people
+  run checks, point everyone at one shared copy, or the sheets will diverge.

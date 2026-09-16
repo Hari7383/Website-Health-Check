@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Sign in &middot; Website Hygiene Check{% endblock %}
+{% block wrapclass %}narrow{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="eyebrow">{{ site }}</div>
+  <h2>Website Hygiene Check</h2>
+  <p class="sub">Sign in to run the checklist. Your name is recorded in the
+     <strong>Checked By</strong> column for every row you save.</p>
+
+  {% if no_accounts %}
+    <div class="flash {{ 'ok' if allow_signup else 'error' }}" style="margin-bottom:16px">
+      {% if allow_signup %}
+        No accounts exist yet &mdash; <a href="{{ url_for('signup') }}">create the first one</a>.
+      {% else %}
+        No accounts exist yet. Create one from a terminal in the project folder:
+        <br><code>python manage.py adduser</code>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <form method="post" autocomplete="off">
+    <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+    <div class="field">
+      <label for="username">Username</label>
+      <input type="text" id="username" name="username" required autofocus autocapitalize="none" spellcheck="false">
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit" class="big" style="width:100%">Sign in</button>
+  </form>
+
+  {% if allow_signup %}
+    <p class="alt">New here? <a href="{{ url_for('signup') }}">Create an account</a></p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+:root{
+  --ground:#f2f4f7; --surface:#fff; --surface-2:#f8fafc;
+  --ink:#161b26; --muted:#5a6474; --line:#dde2ea; --line-strong:#c6cedb;
+  --accent:#2a5d7c; --accent-ink:#1e4459; --accent-soft:#e5eef4;
+  --pass:#0f7355; --pass-bg:#e3f2ec;
+  --fail:#b3232f; --fail-bg:#fbe6e7;
+  --wait:#9a6100; --wait-bg:#faefdc;
+  --shadow:0 1px 2px rgba(22,27,38,.06),0 8px 24px -12px rgba(22,27,38,.18);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --ground:#0e1218; --surface:#161c25; --surface-2:#1b222c;
+    --ink:#e6eaf1; --muted:#9aa5b5; --line:#262e3a; --line-strong:#36404f;
+    --accent:#6ba8c9; --accent-ink:#8fc0da; --accent-soft:#1a2c38;
+    --pass:#46b892; --pass-bg:#122b24;
+    --fail:#e8636f; --fail-bg:#331a1d;
+    --wait:#d99a2b; --wait-bg:#2e2415;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--ground);color:var(--ink);font-size:15px;line-height:1.6;
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:"IBM Plex Serif",Georgia,serif;margin:0;line-height:1.25;text-wrap:balance}
+a{color:var(--accent)}
+.mono,code{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+
+.topbar{background:var(--surface);border-bottom:1px solid var(--line);padding:13px 24px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.topbar .brand{font-family:"IBM Plex Serif",Georgia,serif;font-weight:600;font-size:16px}
+.topbar .who{margin-left:auto;display:flex;align-items:center;gap:12px;font-size:13px;color:var(--muted)}
+.topbar .who strong{color:var(--ink)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+.wrap{max-width:1000px;margin:0 auto;padding:32px 24px 64px;display:flex;flex-direction:column;gap:22px}
+.wrap.narrow{max-width:430px;padding-top:64px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:5px;
+  box-shadow:var(--shadow);padding:22px 24px}
+.card h2{font-size:18px;margin-bottom:4px}
+.card .sub{color:var(--muted);font-size:13.5px;margin:0 0 16px}
+
+label{display:block;font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;
+  letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=password],textarea,select{
+  width:100%;padding:9px 11px;font:inherit;font-size:14px;color:var(--ink);
+  background:var(--surface-2);border:1px solid var(--line-strong);border-radius:3px}
+textarea{resize:vertical;min-height:62px;line-height:1.5}
+.field{margin-bottom:15px}
+
+button,.btn{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;padding:10px 18px;border-radius:3px;border:1px solid var(--accent);
+  background:var(--accent);color:#fff;cursor:pointer;text-decoration:none;display:inline-block}
+button:hover,.btn:hover{background:var(--accent-ink);border-color:var(--accent-ink)}
+button.ghost,.btn.ghost{background:transparent;color:var(--muted);border-color:var(--line-strong)}
+button.ghost:hover,.btn.ghost:hover{color:var(--accent);border-color:var(--accent)}
+button.big{font-size:13px;padding:13px 26px}
+
+.flash{padding:11px 15px;border-radius:3px;font-size:13.5px;border-left:3px solid}
+.flash.error{background:var(--fail-bg);color:var(--fail);border-color:var(--fail)}
+.flash.ok{background:var(--pass-bg);color:var(--pass);border-color:var(--pass)}
+
+.pill{display:inline-block;padding:2px 9px;border-radius:2px;font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;white-space:nowrap}
+.p-pass{background:var(--pass-bg);color:var(--pass)}
+.p-fail{background:var(--fail-bg);color:var(--fail)}
+.p-wait{background:var(--wait-bg);color:var(--wait)}
+
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.stat{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--line-strong);
+  border-radius:4px;padding:14px 16px}
+.stat .n{font-family:"IBM Plex Mono",monospace;font-size:28px;font-weight:600;line-height:1;
+  font-variant-numeric:tabular-nums}
+.stat .l{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);margin-top:6px}
+.stat.s-pass{border-top-color:var(--pass)} .stat.s-pass .n{color:var(--pass)}
+.stat.s-fail{border-top-color:var(--fail)} .stat.s-fail .n{color:var(--fail)}
+.stat.s-wait{border-top-color:var(--wait)} .stat.s-wait .n{color:var(--wait)}
+.stat.s-accent{border-top-color:var(--accent)} .stat.s-accent .n{color:var(--accent)}
+
+dl.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px 18px;margin:0}
+dl.meta dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+dl.meta dd{margin:0;font-size:13.5px;font-family:"IBM Plex Mono",monospace;word-break:break-all}
+
+/* review rows */
+.row{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--line-strong);
+  border-radius:4px;padding:16px 18px;box-shadow:var(--shadow)}
+.row.r-pass{border-left-color:var(--pass)}
+.row.r-fail{border-left-color:var(--fail)}
+.row.r-wait{border-left-color:var(--wait)}
+.row-head{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;margin-bottom:4px}
+.row-head .cat{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted)}
+.row-head .item{font-family:"IBM Plex Serif",Georgia,serif;font-size:16px;font-weight:600;flex:1 1 240px}
+.controls{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start;margin-top:12px}
+.seg{display:flex;gap:0;border:1px solid var(--line-strong);border-radius:3px;overflow:hidden;flex:none}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{margin:0;padding:8px 16px;cursor:pointer;background:var(--surface-2);color:var(--muted);
+  border-right:1px solid var(--line-strong);font-size:11px}
+.seg label:last-of-type{border-right:none}
+.seg input:checked + label.l-pass{background:var(--pass);color:#fff}
+.seg input:checked + label.l-fail{background:var(--fail);color:#fff}
+.note-field{flex:1 1 320px}
+.note-field label{margin-bottom:4px}
+
+details.ev{margin-top:11px}
+details.ev summary{cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:11px;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+details.ev summary:hover{color:var(--accent)}
+details.ev ul{margin:9px 0 0;padding-left:18px;font-family:"IBM Plex Mono",monospace;
+  font-size:12px;color:var(--muted);display:flex;flex-direction:column;gap:3px;word-break:break-all}
+
+.bar{height:7px;background:var(--surface-2);border:1px solid var(--line);border-radius:99px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--accent);width:0;transition:width .3s ease}
+
+.sticky-actions{position:sticky;bottom:0;background:var(--surface);border:1px solid var(--line);
+  border-radius:5px;padding:14px 18px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  box-shadow:0 -4px 20px -8px rgba(22,27,38,.25)}
+.sticky-actions .spacer{margin-left:auto;color:var(--muted);font-size:13px}
+
+ul.plain{margin:0;padding-left:19px;font-size:13.5px;color:var(--muted);display:flex;
+  flex-direction:column;gap:5px}
+@media (max-width:620px){
+  .wrap{padding:22px 14px 48px}
+  .controls{flex-direction:column}
+  .note-field{width:100%}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.hint{margin:5px 0 0;font-size:11.5px;color:var(--muted);
+  font-family:"IBM Plex Mono",monospace;letter-spacing:.02em}
+.alt{margin:18px 0 0;padding-top:15px;border-top:1px solid var(--line);
+  font-size:13.5px;color:var(--muted);text-align:center}
+.alt a{font-weight:600}
+
+/* Failing evidence lines — surfaced in red and pulled to the top by the check */
+details.ev ul li.ev-bad{color:var(--fail);font-weight:600}
+details.ev .ev-count{display:inline-block;margin-left:8px;padding:1px 8px;border-radius:2px;
+  background:var(--fail-bg);color:var(--fail);font-size:10px;font-weight:600;letter-spacing:.08em}

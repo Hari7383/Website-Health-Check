@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Review &middot; Website Hygiene Check{% endblock %}
+
+{% block content %}
+
+<div>
+  <div class="eyebrow">{{ today.strftime('%A, %d %B %Y') }} &middot; results</div>
+  <h1 style="font-size:26px">Review before saving</h1>
+  <p style="color:var(--muted);font-size:13.5px;margin:6px 0 0;max-width:64ch">
+    The agent filled in what it could verify. Change anything you disagree with &mdash;
+    your name goes in the Checked By column, so the final call is yours.
+  </p>
+</div>
+
+{% if browser_error %}
+  <div class="flash error">
+    Rendered browser checks could not run: <strong>{{ browser_error }}</strong><br>
+    Install the Playwright browser once with <code>python -m playwright install chromium</code>, then run again.
+    These blocked checks are shown as <strong>Needs you</strong>, not as website failures.
+  </div>
+{% endif %}
+
+<div class="stats">
+  <div class="stat s-pass"><div class="n">{{ auto_pass }}</div><div class="l">Pass</div></div>
+  <div class="stat s-fail"><div class="n">{{ auto_fail }}</div><div class="l">Fail</div></div>
+  <div class="stat s-wait"><div class="n">{{ needs_you }}</div><div class="l">Needs you</div></div>
+</div>
+
+<form method="post" action="{{ url_for('save', job_id=job_id) }}">
+  <input type="hidden" name="csrf" value="{{ csrf_token() }}">
+
+  <div style="display:flex;flex-direction:column;gap:12px">
+  {% for r in results %}
+    {% set cls = 'r-pass' if r.status == 'Pass' else ('r-fail' if r.status == 'Fail' else 'r-wait') %}
+    <div class="row {{ cls }}">
+      <div class="row-head">
+        <span class="cat">{{ r.category }}</span>
+        <span class="item">{{ r.item }}</span>
+        {% if r.status is none %}
+          <span class="pill p-wait">Your call</span>
+        {% elif r.status == 'Pass' %}
+          <span class="pill p-pass">Agent: Pass</span>
+        {% else %}
+          <span class="pill p-fail">Agent: Fail</span>
+        {% endif %}
+      </div>
+
+      {% if r.urls %}
+        <p style="margin:4px 0 0;font-size:12px;color:var(--muted);word-break:break-all">
+          URL(s): {{ r.urls | join(' | ') }}
+        </p>
+      {% endif %}
+
+      {% if r.status is none and not r.error %}
+        <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">
+          No reliable automated signal for this item &mdash; set it yourself.
+        </p>
+      {% elif r.error %}
+        <p style="margin:4px 0 0;font-size:13px;color:var(--fail)">
+          This check could not complete: {{ r.error }}
+        </p>
+      {% endif %}
+
+      <div class="controls">
+        <div class="seg">
+          <input type="radio" id="pass_{{ r.row }}" name="status_{{ r.row }}" value="Pass"
+                 {% if r.status == 'Pass' %}checked{% endif %}>
+          <label for="pass_{{ r.row }}" class="l-pass">Pass</label>
+          <input type="radio" id="fail_{{ r.row }}" name="status_{{ r.row }}" value="Fail"
+                 {% if r.status == 'Fail' %}checked{% endif %}>
+          <label for="fail_{{ r.row }}" class="l-fail">Fail</label>
+        </div>
+
+        <div class="note-field">
+          <label for="notes_{{ r.row }}">Notes &mdash; written to the sheet</label>
+          <textarea id="notes_{{ r.row }}" name="notes_{{ r.row }}"
+                    placeholder="{% if r.status == 'Pass' %}Leave blank unless there is something to record{% else %}Describe the issue and who is picking it up{% endif %}">{{ r.note }}</textarea>
+        </div>
+      </div>
+
+      {% if r.evidence %}
+      {% set failing = r.evidence | selectattr('bad', 'defined') | selectattr('bad') | list %}
+      <details class="ev" {% if failing %}open{% endif %}>
+        <summary>
+          Evidence ({{ r.evidence|length }})
+          {% if failing %}<span class="ev-count">{{ failing|length }} failing</span>{% endif %}
+        </summary>
+        <ul>
+          {% for e in r.evidence %}
+            {% if e is mapping %}
+              <li class="{{ 'ev-bad' if e.bad }}">{{ e.text }}</li>
+            {% else %}
+              <li>{{ e }}</li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </details>
+      {% endif %}
+    </div>
+  {% endfor %}
+  </div>
+
+  <div class="sticky-actions" style="margin-top:18px">
+    <button type="submit" class="big">Save to workbook</button>
+    <a href="{{ url_for('dashboard') }}" class="btn ghost">Discard</a>
+    <span class="spacer">
+      Saving as <strong>{{ display_name }}</strong> into the {{ today }} column
+    </span>
+  </div>
+</form>
+
+{% endblock %}
